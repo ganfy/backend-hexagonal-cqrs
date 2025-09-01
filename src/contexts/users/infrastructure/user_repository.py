@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +26,12 @@ class UserRepository(UserRepository):
         query = select(UserOrmModel).filter(UserOrmModel.email == email)
         result = await self._session.execute(query)
         orm_user = result.scalars().first()
+        if orm_user:
+            return user_orm_to_domain(orm_user)
+        return None
+
+    async def find_by_id(self, user_id: uuid.UUID) -> Optional[User]:
+        orm_user = await self._session.get(UserOrmModel, user_id)
         if orm_user:
             return user_orm_to_domain(orm_user)
         return None

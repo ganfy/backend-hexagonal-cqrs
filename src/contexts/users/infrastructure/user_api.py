@@ -1,7 +1,12 @@
-import aio_pika
-from fastapi import APIRouter, status
+import uuid
 
+import aio_pika
+from fastapi import APIRouter, Depends, status
+
+from src.contexts.users.application.get_user_use_case import GetUserUseCase
 from src.contexts.users.domain.create_user import CreateUser
+from src.contexts.users.domain.read_user import ReadUser
+from src.contexts.users.infrastructure.user_dependencies import get_user_query_use_case
 from src.core.config.settings import settings
 
 router = APIRouter()
@@ -27,3 +32,13 @@ async def create_user(command: CreateUser):
             routing_key=queue_name,
         )
     return {"message": "User creation request accepted."}
+
+
+@router.get("/{user_id}", response_model=ReadUser)
+async def get_user_by_id(
+    user_id: uuid.UUID, use_case: GetUserUseCase = Depends(get_user_query_use_case)
+):
+    """
+    Endpoint to retrieve a user by their ID.
+    """
+    return await use_case.execute(user_id)
