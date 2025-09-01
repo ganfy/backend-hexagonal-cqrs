@@ -18,7 +18,7 @@ class LoginUseCase:
             raise InvalidCredentialsException("Invalid email or password.")
 
         # (Simulated) Create an access token
-        # In a real application, a JWT would be generated here.
+        # (a JWT would be generated here)
         dummy_token = f"dummy-jwt-for-{user.name}"
 
         return AuthToken(access_token=dummy_token, token_type="bearer")
