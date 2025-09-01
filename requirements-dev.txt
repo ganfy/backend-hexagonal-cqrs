@@ -5,3 +5,4 @@ isort
 pytest
 pytest-asyncio
 pre-commit
+alembic

@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: backend_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cqrs_project_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: backend_rabbitmq
+    ports:
+      - "5672:5672" # App port
+      - "15672:15672" # UI de management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  api:
+    build: .
+    container_name: backend_api
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@db:5432/cqrs_project_database
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+
+  consumer:
+    build: .
+    container_name: backend_consumer
+    command: python -m src.user_consumer
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@db:5432/cqrs_project_database
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    restart: on-failure
+
+volumes:
+  postgres_data:
