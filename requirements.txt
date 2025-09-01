@@ -6,5 +6,4 @@ pydantic
 pydantic[email]
 python-decouple
 aio-pika
-passlib==5.3.0
-bcrypt==4.1.2
+passlib[bcrypt]

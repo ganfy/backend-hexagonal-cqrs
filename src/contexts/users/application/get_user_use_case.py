@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import asdict
 from typing import Optional
 
 from src.contexts.users.application.user_query_repository import UserQueryRepository
@@ -14,4 +15,6 @@ class GetUserUseCase:
         user = await self._user_query_repository.find_by_id(user_id)
         if not user:
             raise UserNotFoundException(f"User with id {user_id} not found.")
-        return user
+
+        user_dict = asdict(user)
+        return ReadUser.model_validate(user_dict)
